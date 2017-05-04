@@ -12,6 +12,7 @@ import AVFoundation
 class ViewController: UIViewController {
 
     var export: AVAssetExportSession?
+    var timer: Timer?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -48,7 +49,7 @@ class ViewController: UIViewController {
         
         let docsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
         let docsURL = URL(fileURLWithPath: docsPath)
-        let outputURL = docsURL.appendingPathComponent("video1.mov", isDirectory: false)
+        let outputURL = docsURL.appendingPathComponent("video2.mov", isDirectory: false)
         
         
         let export = AVAssetExportSession(asset: videoAsset, presetName: AVAssetExportPreset1280x720)!
@@ -85,21 +86,15 @@ class ViewController: UIViewController {
             
         }
         
-        export.addObserver(self, forKeyPath: "progress", options: .new, context: nil)
-        
         self.export = export
-    }
-    
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         
-        guard let progress = object as? NSNumber else { return }
-        
-        print("Progress: \(progress)")
-        
-    }
-    
-    deinit {
-        self.export?.removeObserver(self, forKeyPath: "progress")
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { thisTimer in
+            
+            print("Progress: \(export.progress)")
+            if export.progress >= 1.0 {
+                thisTimer.invalidate()
+            }
+        }
     }
     
 }
